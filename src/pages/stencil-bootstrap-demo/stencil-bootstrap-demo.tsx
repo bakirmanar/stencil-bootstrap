@@ -52,6 +52,16 @@ export class StencilBootstrapDemo {
                   Breadcrumb
                 </stencil-route-link>
               </li>
+              <li>
+                <stencil-route-link
+                  url="/file-input"
+                  urlMatch={['/file-input']}
+                  activeClass="active"
+                  exact={true}
+                >
+                  File Input
+                </stencil-route-link>
+              </li>
             </ul>
           </div>
 
@@ -72,6 +82,12 @@ export class StencilBootstrapDemo {
               <stencil-route
                 url={['/breadcrumb']}
                 component="breadcrumb-page"
+                exact={true}
+              >
+              </stencil-route>
+              <stencil-route
+                url={['/file-input']}
+                component="file-input-page"
                 exact={true}
               >
               </stencil-route>

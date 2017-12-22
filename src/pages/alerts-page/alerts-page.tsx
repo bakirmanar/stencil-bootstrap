@@ -1,4 +1,6 @@
 import { Component, State } from '@stencil/core';
+import { BootstrapThemeColor } from '../../common/bootstrap-theme-color.type';
+
 
 @Component({
   tag: 'alerts-page',
@@ -7,7 +9,7 @@ export class AlertsPage {
   @State() hasAnimatableDismissibleAlert = true;
   @State() hasDismissibleAlert = true;
 
-  alertTypes = [
+  alertTypes: BootstrapThemeColor[] = [
     'primary',
     'secondary',
     'success',

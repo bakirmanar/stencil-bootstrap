@@ -5,8 +5,14 @@ import { Component } from '@stencil/core';
 })
 export class FileInputPage {
   render() {
-    return (
-      <scb-file-input></scb-file-input>
-    );
+    return [
+      <div>
+        <h2>Basic usage</h2>
+        <scb-file-input></scb-file-input>
+
+        <h2>Max length</h2>
+        <scb-file-input max-files="3"></scb-file-input>
+      </div>
+    ];
   }
 }

@@ -6,12 +6,18 @@ import { Component } from '@stencil/core';
 export class FileInputPage {
   render() {
     return [
-      <div>
+      <div class="container">
         <h2>Basic usage</h2>
         <scb-file-input></scb-file-input>
 
         <h2>Max length</h2>
+        max-files="3"
         <scb-file-input max-files="3"></scb-file-input>
+
+        <h2>Custom drop label</h2>
+        <scb-file-input max-files="1">
+          <span slot="label">Drop your files here</span>
+        </scb-file-input>
       </div>
     ];
   }

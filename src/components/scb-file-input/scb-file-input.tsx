@@ -26,24 +26,37 @@ export class ScbFileInput {
     let files = this.selectedFiles;
 
     files.splice(index, 1);
-    this.selectedFiles = files;
+    this.selectedFiles = [...files];
   }
 
   render() {
     const buttonClasses = {
       btn: true,
-      [`btn-${this.type}`]: true,
+      [`btn-outline-${this.type}`]: true,
     };
-    const buttonText = 'Upload Files';
-    let attrs = {};
+    const isMultiple = this.maxFiles > 1;
+    const buttonText:string = isMultiple ? 'Upload Files' : 'Select File';
+    const dropLabel:string = 'Drop files here...';
+    const nodrop:boolean = this.el.hasAttribute('nodrop');
+    const label = nodrop ? '' : <span class="scb-file-input-label">
+        <slot name="label"></slot>
+        <span class="default-label">{dropLabel}</span>
+      </span>;
+    let buttonAttrs:object = {};
+    let inputAttrs:object = {};
+
     if (this.maxFiles > 0 && this.maxFiles <= this.selectedFiles.length) {
-      attrs['disabled'] = 'disabled';
+        buttonAttrs['disabled'] = 'disabled';
     }
+    if (isMultiple) {
+      inputAttrs['multiple'] = true;
+    }
+
     return (
       <div class="scb-file-input-wrapper">
-        <input class="scb-file-input-hidden" type="file" onChange={() => this.onFileSelect(event)}
-               multiple/>
-        <button class={buttonClasses} onClick={() => this.openFileInput()} {...attrs}>{buttonText}</button>
+        <input class="scb-file-input-hidden" type="file" onChange={() => this.onFileSelect(event)} {...inputAttrs}/>
+        <button class={buttonClasses} onClick={() => this.openFileInput()} {...buttonAttrs}>{buttonText}</button>
+        {label}
         {this.selectedFiles.map((file, i) =>
           <div class="scb-file-row">
             <span class="scb-file-name">{file.name}</span>

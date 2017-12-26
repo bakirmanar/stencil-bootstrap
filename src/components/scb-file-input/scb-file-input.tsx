@@ -2,6 +2,7 @@ import {
   Component,
   Element,
   HostElement,
+  Listen,
   Prop,
   State,
 } from '@stencil/core';
@@ -34,7 +35,7 @@ export class ScbFileInput {
       btn: true,
       [`btn-outline-${this.type}`]: true,
     };
-    const isMultiple = this.maxFiles > 1;
+    const isMultiple = this.maxFiles !== 1;
     const buttonText:string = isMultiple ? 'Upload Files' : 'Select File';
     const dropLabel:string = 'Drop files here...';
     const nodrop:boolean = this.el.hasAttribute('nodrop');
@@ -46,7 +47,7 @@ export class ScbFileInput {
     let inputAttrs:object = {};
 
     if (this.maxFiles > 0 && this.maxFiles <= this.selectedFiles.length) {
-        buttonAttrs['disabled'] = 'disabled';
+      buttonAttrs['disabled'] = 'disabled';
     }
     if (isMultiple) {
       inputAttrs['multiple'] = true;
@@ -61,26 +62,52 @@ export class ScbFileInput {
           <div class="scb-file-row">
             <span class="scb-file-name">{file.name}</span>
             <button class="icon-btn" onClick={() => this.removeFile(i)}><i class="scb-icon icon-close"></i></button>
-          </div>
+          </div>,
         )}
       </div>
     );
   }
 
+  @Listen('dragenter')
+  private cancelDefaultDragEnter(event): boolean {
+    event.preventDefault();
+    return false;
+  }
+  @Listen('dragover')
+  private cancelDefaultDragOver(event): boolean {
+    event.preventDefault();
+    return false;
+  }
+  @Listen('drop')
+  private onDrop(e): boolean {
+    event.preventDefault();
+    const nodrop:boolean = this.el.hasAttribute('nodrop');
+
+    if (!nodrop) {
+      const dt = e.dataTransfer;
+      this.addFiles(dt.files);
+    }
+
+    return false;
+  }
+
   private onFileSelect(event): void {
-    const inputFiles = event.target.files;
+    this.addFiles(event.target.files);
+  }
+
+  private addFiles(files): void {
     const diff = this.maxFiles - this.selectedFiles.length;
-    if (inputFiles.length > 0 && (this.maxFiles === 0 || diff > 0)) {
-      const inputFilesArray = [];
+    if (files.length > 0 && (this.maxFiles === 0 || diff > 0)) {
+      const filesArray = [];
 
-      for (const item of inputFiles) {
-        inputFilesArray.push(item);
+      for (const item of files) {
+        filesArray.push(item);
       }
-      if (this.maxFiles > 0 && inputFilesArray.length > diff) {
-        inputFilesArray.length = diff;
+      if (this.maxFiles > 0 && filesArray.length > diff) {
+        filesArray.length = diff;
       }
 
-      this.selectedFiles = [...this.selectedFiles, ...inputFilesArray];
+      this.selectedFiles = [...this.selectedFiles, ...filesArray];
     }
   }
 }

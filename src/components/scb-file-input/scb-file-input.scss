@@ -85,7 +85,7 @@
   opacity: 0;
 }
 
-.scb-file-row {
+.scb-file-row-header {
   display: flex;
   justify-content: space-between;
 }
@@ -97,4 +97,7 @@
 }
 [slot="label"] + .default-label {
   display: none;
+}
+.scb-file-input-wrapper .progress-bar {
+  transition: none;
 }

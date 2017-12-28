@@ -17,6 +17,8 @@ export class ScbFileInput {
   @Prop() type: BootstrapThemeColor = 'primary';
   @Prop() maxFiles: number = 0;
   @Prop() nodrop: boolean = false;
+  @Prop() accept: string;
+  @Prop() maxFileSize: number = 0;
   @State() selectedFiles = [];
 
   openFileInput(): void {
@@ -59,8 +61,9 @@ export class ScbFileInput {
     if (isMultiple) {
       inputAttrs['multiple'] = true;
     }
-
-    console.log(this.selectedFiles);
+    if (this.accept) {
+      inputAttrs['accept'] = this.accept;
+    }
 
     return (
       <div class="scb-file-input-wrapper">
@@ -75,7 +78,7 @@ export class ScbFileInput {
                 <button class={{
                   'icon-btn': true,
                   'scb-file-retry-btn': true,
-                  'd-none': this.selectedFiles[i].fileReader.readyState === 2 && this.selectedFiles[i].loadStatus === 100,
+                  'd-inline-block': file.fileReader.readyState === 2 && file.loadStatus !== 100,
                 }} onClick={() => this.retryUpload(i)}>
                   <span class="scb-icon icon-reload"></span>
                 </button>
@@ -85,8 +88,11 @@ export class ScbFileInput {
               </div>
             </div>
             <div class="progress">
-              <div class="progress-bar" style={{ width: file.loadStatus + '%' }} role="progressbar"
-                   aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+              <div class={{
+                'progress-bar': true,
+                [`bg-${this.type}`]: true,
+              }} style={{ width: file.loadStatus + '%' }} role="progressbar" aria-valuenow="0"
+                   aria-valuemin="0" aria-valuemax="100"></div>
             </div>
           </div>,
         )}
@@ -129,7 +135,7 @@ export class ScbFileInput {
 
       this.selectedFiles = [];
       for (const item of files) {
-        filesArray.push(item);
+        this.isAcceptedFileType(item) && this.isPassedFileSize(item) && filesArray.push(item);
       }
       if (this.maxFiles > 0 && filesArray.length > diff) {
         filesArray.length = diff;
@@ -138,8 +144,23 @@ export class ScbFileInput {
         file.elemId = 'file' + i + Date.now();
       });
       setTimeout(() => this.selectedFiles = [...lastSelectedFiles, ...filesArray]);
-      filesArray.forEach((file) => this.readFile(file));
+      filesArray.forEach(file => this.readFile(file));
     }
+  }
+
+  private isAcceptedFileType(file): boolean {
+    if (!this.accept) {
+      return true;
+    }
+
+    const fileName = file.name.match(/\.[^\.]*$|$/)[0];
+    const template = new RegExp('^(' + this.accept.replace(/[, ]+/g, '|').replace(/\/\*/g, '/.*') + ')$', 'i');
+
+    return template.test(file.type) || template.test(fileName);
+  }
+
+  private isPassedFileSize(file): boolean {
+    return !this.maxFileSize || file.size <= this.maxFileSize;
   }
 
   private readFile(file): void {
@@ -156,9 +177,9 @@ export class ScbFileInput {
 
     reader.onloadend = () => {
       const retryBtn = this.el.querySelector('#' + file.elemId + ' .scb-file-retry-btn') as HTMLElement;
-      const isLoaded = file.fileReader.readyState === 2 && file.loadStatus === 100;
+      const isAborted = file.fileReader.readyState === 2 && file.loadStatus !== 100;
 
-      retryBtn && retryBtn.classList.toggle('d-none', isLoaded);
+      retryBtn && retryBtn.classList.toggle('d-inline-block', isAborted);
     };
 
     reader.onload = () => {

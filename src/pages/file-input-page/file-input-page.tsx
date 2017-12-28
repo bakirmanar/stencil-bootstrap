@@ -20,7 +20,7 @@ export class FileInputPage {
 
         <h2>No drag and drop</h2>
         nodrop
-        <scb-file-input nodrop="asd"></scb-file-input>
+        <scb-file-input nodrop></scb-file-input>
 
         <h2>Custom drop label</h2>
         <scb-file-input>

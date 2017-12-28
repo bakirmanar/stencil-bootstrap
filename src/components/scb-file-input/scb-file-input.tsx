@@ -16,7 +16,7 @@ export class ScbFileInput {
   @Element() el: HostElement;
   @Prop() type: BootstrapThemeColor = 'primary';
   @Prop() maxFiles: number = 0;
-  @Prop() nodrop: any;
+  @Prop() nodrop: boolean = false;
   @State() selectedFiles = [];
 
   openFileInput(): void {
@@ -27,8 +27,9 @@ export class ScbFileInput {
   removeFile(index: number): void {
     let files = this.selectedFiles;
 
+    this.selectedFiles = [];
     files.splice(index, 1);
-    this.selectedFiles = [...files];
+    setTimeout(() => this.selectedFiles = [...files]);
   }
 
   retryUpload(index: number): void {
@@ -44,9 +45,8 @@ export class ScbFileInput {
     };
     const isMultiple = this.maxFiles !== 1;
     const buttonText:string = isMultiple ? 'Upload Files' : 'Select File';
-    const dropLabel:string = 'Drop files here...';
-    const nodrop:boolean = this.el.hasAttribute('nodrop');
-    const label = nodrop ? '' : <span class="scb-file-input-label">
+    const dropLabel:string = isMultiple ? 'Drop files here...' : 'Drop file here...';
+    const label = this.nodrop ? '' : <span class="scb-file-input-label">
         <slot name="label"></slot>
         <span class="default-label">{dropLabel}</span>
       </span>;
@@ -77,7 +77,7 @@ export class ScbFileInput {
                   'scb-file-retry-btn': true,
                   'd-none': this.selectedFiles[i].fileReader.readyState === 2 && this.selectedFiles[i].loadStatus === 100,
                 }} onClick={() => this.retryUpload(i)}>
-                  <span aria-hidden="true">R</span>
+                  <span class="scb-icon icon-reload"></span>
                 </button>
                 <button class="icon-btn close" onClick={() => this.removeFile(i)}>
                   <span aria-hidden="true">&times;</span>
@@ -107,9 +107,7 @@ export class ScbFileInput {
   @Listen('drop')
   private onDrop(e): boolean {
     event.preventDefault();
-    const nodrop:boolean = this.el.hasAttribute('nodrop');
-
-    if (!nodrop) {
+    if (!this.nodrop) {
       const dt = e.dataTransfer;
       this.addFiles(dt.files);
     }
@@ -124,11 +122,12 @@ export class ScbFileInput {
 
   private addFiles(files): void {
     const diff = this.maxFiles - this.selectedFiles.length;
+
     if (files.length > 0 && (this.maxFiles === 0 || diff > 0)) {
       const lastSelectedFiles = this.selectedFiles;
-      this.selectedFiles = [];
       const filesArray = [];
 
+      this.selectedFiles = [];
       for (const item of files) {
         filesArray.push(item);
       }
@@ -138,9 +137,7 @@ export class ScbFileInput {
       filesArray.forEach((file, i) => {
         file.elemId = 'file' + i + Date.now();
       });
-      // setTimeout(() => this.selectedFiles = [...filesArray, ...lastSelectedFiles], 1000);
-      this.selectedFiles = [...filesArray, ...lastSelectedFiles];
-
+      setTimeout(() => this.selectedFiles = [...lastSelectedFiles, ...filesArray]);
       filesArray.forEach((file) => this.readFile(file));
     }
   }
@@ -152,34 +149,26 @@ export class ScbFileInput {
     reader.onprogress = (e) => {
       const percentage = Math.round(e.loaded / e.total * 100);
       const prBar = this.el.querySelector('#' + file.elemId + ' .progress-bar') as HTMLElement;
+
       file.loadStatus = percentage;
       prBar && (prBar.style.width = percentage + '%');
     };
 
-    reader.onerror = () => {
-      console.log('error');
-    };
-    reader.onabort = (e) => {
-      console.log('abort', e);
-    };
-
-    reader.onloadend = (e) => {
+    reader.onloadend = () => {
       const retryBtn = this.el.querySelector('#' + file.elemId + ' .scb-file-retry-btn') as HTMLElement;
       const isLoaded = file.fileReader.readyState === 2 && file.loadStatus === 100;
+
       retryBtn && retryBtn.classList.toggle('d-none', isLoaded);
-      console.log('ended', e);
     };
 
-    reader.onload = (e) => {
-      console.log('loaded');
+    reader.onload = () => {
       const prBar = this.el.querySelector('#' + file.elemId + ' .progress-bar') as HTMLElement;
+
       file.loadStatus = 100;
       prBar && (prBar.style.width = '100%');
     };
 
     reader.readAsDataURL(file);
     file.fileReader = reader;
-    setTimeout(() => file.fileReader.abort());
   }
-
 }

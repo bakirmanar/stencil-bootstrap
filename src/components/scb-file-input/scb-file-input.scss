@@ -121,6 +121,9 @@ $scbIconSize: 16px;
 [slot="label"] + .default-label {
   display: none;
 }
+.scb-file-row{
+  margin-top: 10px;
+}
 .scb-file-input-wrapper .progress-bar {
   transition: none;
 }

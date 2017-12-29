@@ -5,7 +5,7 @@ import { Component } from '@stencil/core';
 })
 export class FileInputPage {
   render() {
-    return [
+    return (
       <div class="container">
         <h2>Basic usage</h2>
         <scb-file-input></scb-file-input>
@@ -26,6 +26,11 @@ export class FileInputPage {
         nodrop
         <scb-file-input nodrop></scb-file-input>
 
+        <h2>Upload Request Properties</h2>
+        method="post" target="http://someurl" form-data-name="file"
+        <scb-file-input method="post" target="http://someurl" form-data-name="file">
+        </scb-file-input>
+
         <h2>Custom drop label</h2>
         <scb-file-input>
           <span slot="label">Drop your files here</span>
@@ -33,10 +38,10 @@ export class FileInputPage {
 
         <h2>Setting Restrictions on Files to Upload</h2>
         accept="image/*" maxFileSize="1000000"
-        <scb-file-input accept="image/*" maxFileSize="1000000">
+        <scb-file-input accept="image/*" max-file-size="1000000">
           <span slot="label">Drop images(up to 1 MB) here...</span>
         </scb-file-input>
       </div>
-    ];
+    );
   }
 }

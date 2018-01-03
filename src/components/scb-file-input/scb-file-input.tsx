@@ -10,7 +10,7 @@ import { BootstrapThemeColor } from '../../common/index';
 
 @Component({
   tag: 'scb-file-input',
-  styleUrl: './scb-file-input.scss',
+  styleUrl: './scb-file-input.scss'
 })
 export class ScbFileInput {
   @Element() el: HostElement;
@@ -26,11 +26,18 @@ export class ScbFileInput {
   @Prop() formDataName: string;
   @State() selectedFiles = [];
 
+  /**
+   * Fire hidden input click event on Button click
+   */
   openFileInput(): void {
     const hiddenInput:HTMLElement = this.el.getElementsByClassName('scb-file-input-hidden')[0] as HTMLElement;
     hiddenInput.click();
   }
 
+  /**
+   * Remove the file from files list and aborting all pending actions about it
+   * @param {number} index - index of a file in a list
+     */
   removeFile(index: number): void {
     let files = this.selectedFiles;
     let file = files[index];
@@ -42,6 +49,10 @@ export class ScbFileInput {
     setTimeout(() => this.selectedFiles = [...files]);
   }
 
+  /**
+   * Retry the upload action for a single file
+   * @param {number} index - index of a file in a list
+     */
   retryUpload(index: number): void {
     const file = this.selectedFiles[index];
 
@@ -49,21 +60,43 @@ export class ScbFileInput {
     this.isLoadingAborted && this.uploadFile(file);
   }
 
+  /**
+   * Check if loading of a file was aborted
+   * @param {Object} file - file object
+   * @returns {boolean}
+     */
   isLoadingAborted(file): boolean {
     return file.uploadEnded && file.loadStatus !== 100;
   }
 
   @Listen('dragenter')
+  /**
+   * Cancel default Drag Enter event
+   * @param {Object} event - dragenter event
+   * @returns {boolean}
+   */
   private cancelDefaultDragEnter(event): boolean {
     event.preventDefault();
     return false;
   }
+
   @Listen('dragover')
+  /**
+   * Cancel default Drag Over event
+   * @param {Object} event - dragover event
+   * @returns {boolean}
+   */
   private cancelDefaultDragOver(event): boolean {
     event.preventDefault();
     return false;
   }
+
   @Listen('drop')
+  /**
+   * Trigger addFiles function on drop event
+   * @param {Object} event - drop event
+   * @returns {boolean}
+   */
   private onDrop(e): boolean {
     event.preventDefault();
     if (!this.nodrop) {
@@ -74,11 +107,19 @@ export class ScbFileInput {
     return false;
   }
 
+  /**
+   * Handle the file select event
+   * @param {Object} event - Files select event
+     */
   private onFileSelect(event): void {
     this.addFiles(event.target.files);
     event.target.value = '';
   }
 
+  /**
+   * Validate, add files to files list and read them
+   * @param {Array} files
+     */
   private addFiles(files): void {
     const diff = this.maxFiles - this.selectedFiles.length;
 
@@ -101,6 +142,11 @@ export class ScbFileInput {
     }
   }
 
+  /**
+   * Check if file is accepted type
+   * @param {Object} file
+   * @returns {boolean}
+     */
   private isAcceptedFileType(file): boolean {
     if (!this.accept) {
       return true;
@@ -112,10 +158,19 @@ export class ScbFileInput {
     return template.test(file.type) || template.test(fileName);
   }
 
+  /**
+   * Check if file is accepted size
+   * @param {Object} file
+   * @returns {boolean}
+     */
   private isPassedFileSize(file): boolean {
     return !this.maxFileSize || file.size <= this.maxFileSize;
   }
 
+  /**
+   * Change the Retry button state
+   * @param {Object} file
+     */
   private toggleRetryBtn(file): void {
     const retryBtn = this.el.querySelector('#' + file.elemId + ' .scb-file-retry-btn') as HTMLElement;
     const isAborted = this.isLoadingAborted(file);
@@ -123,6 +178,10 @@ export class ScbFileInput {
     retryBtn && retryBtn.classList.toggle('d-inline-block', isAborted);
   }
 
+  /**
+   * Read file after add
+   * @param {Object} file
+     */
   private readFile(file): void {
     const reader = new FileReader();
     const isRequestDataPresent = this.method && this.target && this.formDataName;
@@ -147,6 +206,10 @@ export class ScbFileInput {
     file.fileReader = reader;
   }
 
+  /**
+   * Upload file after read or retry button click
+   * @param {Object} file
+     */
   private uploadFile(file): void {
     if (!file.uploading) {
       // const startDate = Date.now();
@@ -280,6 +343,10 @@ export class ScbFileInput {
     }
   }
 
+  /**
+   * Setup the XHR Request
+   * @param {Object} request - upload request
+     */
   private configureXhr(request) {
     let headers: object;
     if (typeof this.headers === 'string') {
@@ -296,6 +363,12 @@ export class ScbFileInput {
     this.timeout && (request.timeout = this.timeout);
   }
 
+  /**
+   * Show the upload progress of a file
+   * @param {Object} file
+   * @param {number} loadedPercentage
+   * @param {string} status
+     */
   private changeFileUploadProgress(file, loadedPercentage: number, status: string) {
     const prBar = this.el.querySelector('#' + file.elemId + ' .progress-bar') as HTMLElement;
     const statusBar = this.el.querySelector('#' + file.elemId + ' .scb-file-status') as HTMLElement;

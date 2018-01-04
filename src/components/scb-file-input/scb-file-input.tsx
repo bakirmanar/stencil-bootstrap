@@ -225,10 +225,9 @@ export class ScbFileInput {
         const loaded = e.loaded;
         const total = e.total;
         const progress = Math.round(100 * (loaded / total));
-        
         file.loaded = loaded;
         file.indeterminate = 0 >= loaded || loaded >= total;
-        
+
         if (file.error) {
           file.status = '';
           file.indeterminate = undefined;
@@ -243,12 +242,12 @@ export class ScbFileInput {
 
           this.changeFileUploadProgress(file, progress, 'uploading');
 
-          /* this.dispatchEvent(new CustomEvent('upload-progress', {
-             detail: {
-               file: file,
-               xhr: request,
-             },
-           }));*/
+          this.el.dispatchEvent(new CustomEvent('upload-progress', {
+            detail: {
+              file: file,
+              xhr: request,
+            },
+          }));
         }
       };
       request.onreadystatechange = () => {
@@ -256,46 +255,44 @@ export class ScbFileInput {
           // clearTimeout(stalledTimeout);
           file.indeterminate = file.uploading = false;
           if (file.abort) {
-            this.changeFileUploadProgress(file, file.loadStatus,'error');
+            this.changeFileUploadProgress(file, file.loadStatus, 'error');
           } else {
-            this.changeFileUploadProgress(file, 100,'');
-            file.udloaded = true;
-            /* const uploadResponseNotCanceled = this.dispatchEvent(new CustomEvent('upload-response',{
-            detail: {
-              file: file,
-              xhr: request,
-            },
-            cancelable: true,
-          }));
-          if (!uploadResponseNotCanceled) {
-            return;
-          }*/
-            /*if (request.status === 0) {
+            const uploadResponseNotCanceled = this.el.dispatchEvent(new CustomEvent('upload-response', {
+              detail: {
+                file: file,
+                xhr: request,
+              },
+              cancelable: true,
+            }));
+            if (!uploadResponseNotCanceled) {
+              return;
+            }
+            if (request.status === 0) {
               file.error = 'serverUnavailable';
             } else if (request.status >= 500) {
               file.error = 'unexpectedServerError';
             } else if (request.status >= 400) {
               file.error = 'forbidden';
-              file.complete = false;
-              this.dispatchEvent(new CustomEvent(`upload-${file.error ? 'error' : 'success'}`, {
-                detail: {
-                  file: file,
-                  xhr: request,
-                },
-              }));
-              this._notifyFileChanges(file);
-            }*/
+            }
+            file.complete = false;
+            this.el.dispatchEvent(new CustomEvent(`upload-${file.error ? 'error' : 'success'}`, {
+              detail: {
+                file: file,
+                xhr: request,
+              },
+            }));
+            this.changeFileUploadProgress(file, 100,'');
+            file.udloaded = true;
           }
         }
       };
       request.upload.onloadstart = () => {
-        /*this.dispatchEvent(new CustomEvent('upload-start',{
+        this.el.dispatchEvent(new CustomEvent('upload-start',{
           detail: {
             file: file,
             xhr: request,
           },
         }));
-        this._notifyFileChanges(file);*/
       };
       request.upload.onloadend = () => {
         file.uploadEnded = true;
@@ -306,7 +303,7 @@ export class ScbFileInput {
       };
 
 
-      /*const uploadBeforeNotCanceled = this.dispatchEvent(new CustomEvent('upload-before', {
+      const uploadBeforeNotCanceled = this.el.dispatchEvent(new CustomEvent('upload-before', {
         detail: {
           file: file,
           xhr: request,
@@ -315,8 +312,8 @@ export class ScbFileInput {
       }));
        // code below is running if uploadBefore is not canceled
       if (uploadBeforeNotCanceled) {
-
-      }*/
+        return;
+      }
       const formData = new FormData;
       file.uploadTarget = this.target || '';
       file.formDataName = this.formDataName;
@@ -330,7 +327,7 @@ export class ScbFileInput {
       file.uploadEnded = false;
       file.complete = file.abort = file.error = file.held = false;
 
-      /*const uploadRequestNotCanceled = this.dispatchEvent(new CustomEvent('upload-request', {
+      const uploadRequestNotCanceled = this.el.dispatchEvent(new CustomEvent('upload-request', {
         detail: {
           file: file,
           xhr: request,
@@ -338,7 +335,7 @@ export class ScbFileInput {
         },
         cancelable: true,
       }));
-      uploadRequestNotCanceled && request.send(formData);*/
+      uploadRequestNotCanceled && request.send(formData);
       request.send(formData);
     }
   }

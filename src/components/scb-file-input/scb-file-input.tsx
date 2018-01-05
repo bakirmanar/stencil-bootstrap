@@ -14,6 +14,7 @@ import { BootstrapThemeColor } from '../../common/index';
 })
 export class ScbFileInput {
   @Element() el: HostElement;
+  @Prop() files: any[] = [];
   @Prop() type: BootstrapThemeColor = 'primary';
   @Prop() maxFiles: number = 0;
   @Prop() nodrop: boolean = false;
@@ -24,7 +25,13 @@ export class ScbFileInput {
   @Prop() timeout: number;
   @Prop() headers: string;
   @Prop() formDataName: string;
-  @State() selectedFiles = [];
+  @State()
+  private selectedFiles = [];
+  private element;
+
+  componentWillLoad() {
+    this.element = this.el;
+  }
 
   /**
    * Fire hidden input click event on Button click
@@ -39,14 +46,14 @@ export class ScbFileInput {
    * @param {number} index - index of a file in a list
      */
   removeFile(index: number): void {
-    let files = this.selectedFiles;
+    let files = this.element.files;
     let file = files[index];
 
     file.reading && file.fileReader.abort();
     file.uploading && file.xhr.abort();
     files.splice(index, 1);
-    this.selectedFiles = [];
-    setTimeout(() => this.selectedFiles = [...files]);
+    this.element.files = [];
+    setTimeout(() => this.element.files = [...files]);
   }
 
   /**
@@ -54,9 +61,8 @@ export class ScbFileInput {
    * @param {number} index - index of a file in a list
      */
   retryUpload(index: number): void {
-    const file = this.selectedFiles[index];
+    const file = this.element.files[index];
 
-    // file.loadStatus < 100 && file.fileReader.readAsDataURL(file);
     this.isLoadingAborted && this.uploadFile(file);
   }
 
@@ -121,13 +127,13 @@ export class ScbFileInput {
    * @param {Array} files
      */
   private addFiles(files): void {
-    const diff = this.maxFiles - this.selectedFiles.length;
+    const diff = this.maxFiles - this.element.files.length;
 
     if (files.length > 0 && (this.maxFiles === 0 || diff > 0)) {
-      const lastSelectedFiles = this.selectedFiles;
+      const lastSelectedFiles = this.element.files;
       const filesArray = [];
 
-      this.selectedFiles = [];
+      this.element.files = [];
       for (const item of files) {
         this.isAcceptedFileType(item) && this.isPassedFileSize(item) && filesArray.push(item);
       }
@@ -137,7 +143,7 @@ export class ScbFileInput {
       filesArray.forEach((file, i) => {
         file.elemId = 'file' + i + Date.now();
       });
-      setTimeout(() => this.selectedFiles = [...lastSelectedFiles, ...filesArray]);
+      setTimeout(() => this.element.files = [...lastSelectedFiles, ...filesArray]);
       filesArray.forEach(file => this.readFile(file));
     }
   }
@@ -212,16 +218,12 @@ export class ScbFileInput {
      */
   private uploadFile(file): void {
     if (!file.uploading) {
-      // const startDate = Date.now();
       const request = new XMLHttpRequest;
       let stalledTimeout;
-      let progDate;
 
       file.xhr = request;
       request.upload.onprogress = (e) => {
         clearTimeout(stalledTimeout);
-        progDate = Date.now();
-        // const diff = (progDate - startDate) / 1000;
         const loaded = e.loaded;
         const total = e.total;
         const progress = Math.round(100 * (loaded / total));
@@ -252,7 +254,7 @@ export class ScbFileInput {
       };
       request.onreadystatechange = () => {
         if (request.readyState === 4) {
-          // clearTimeout(stalledTimeout);
+          clearTimeout(stalledTimeout);
           file.indeterminate = file.uploading = false;
           if (file.abort) {
             this.changeFileUploadProgress(file, file.loadStatus, 'error');
@@ -392,7 +394,7 @@ export class ScbFileInput {
     let buttonAttrs:object = {};
     let inputAttrs:object = {};
 
-    if (this.maxFiles > 0 && this.maxFiles <= this.selectedFiles.length) {
+    if (this.maxFiles > 0 && this.maxFiles <= this.element.files.length) {
       buttonAttrs['disabled'] = 'disabled';
     }
     if (isMultiple) {
@@ -402,6 +404,9 @@ export class ScbFileInput {
       inputAttrs['accept'] = this.accept;
     }
 
+    /* Sometimes we should disable "Select files" buttons. However we can't set 'disabled' attribute
+     * directly to custom button in <slot>. This is why we have to use here <fieldset> tag.
+     */
     return (
       <div class="scb-fi-wrapper">
         <input class="scb-fi-hidden" type="file" onChange={() => this.onFileSelect(event)} {...inputAttrs}/>
@@ -410,19 +415,19 @@ export class ScbFileInput {
           <button class={buttonClasses}>{buttonText}</button>
         </fieldset>
         {label}
-        {this.selectedFiles.map((file, i) =>
+        {this.files.map((file, i) =>
           <div class="scb-fi-row" id={file.elemId}>
             <div class="scb-fi-row-header">
               <span class="scb-fi-name">{file.name}</span>
               <div class="scb-fi-controls">
                 <button class={{
-                  'icon-btn': true,
+                  'scb-fi-icon-btn': true,
                   'scb-fi-retry-btn': true,
                   'd-inline-block': this.isLoadingAborted(file),
                 }} onClick={() => this.retryUpload(i)}>
                   <span class="scb-icon icon-reload"></span>
                 </button>
-                <button class="icon-btn close" onClick={() => this.removeFile(i)}>
+                <button class="scb-fi-icon-btn close" onClick={() => this.removeFile(i)}>
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>

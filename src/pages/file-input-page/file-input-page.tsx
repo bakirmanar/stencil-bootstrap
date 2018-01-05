@@ -36,6 +36,11 @@ export class FileInputPage {
           <span slot="label">Drop your files here</span>
         </scb-file-input>
 
+        <h2>Custom button</h2>
+        <scb-file-input>
+          <span slot="button"><button>Select files</button></span>
+        </scb-file-input>
+
         <h2>Setting Restrictions on Files to Upload</h2>
         accept="image/*" maxFileSize="1000000"
         <scb-file-input accept="image/*" max-file-size="1000000">

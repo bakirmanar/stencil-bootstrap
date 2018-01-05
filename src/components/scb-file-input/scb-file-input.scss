@@ -5,8 +5,6 @@
 * @param {string} $svg - SVG image to encode
 * @returns {string} - encoded SVG data uri
 */
-
-
 @function svg-uri($svg) {
   $encoded: '';
   $slice: 2000;
@@ -45,7 +43,6 @@
 }
 
 $scbIconSize: 16px;
-
 .scb-icon {
   display: inline-block;
   width: $scbIconSize;
@@ -91,54 +88,66 @@ $scbIconSize: 16px;
   }
 }
 
-.icon-btn,
-.icon-btn:hover,
-.icon-btn:focus {
-  background: none;
-  outline: none;
-  box-shadow: none;
-  border: none;
-  cursor: pointer;
-  line-height: 1;
-}
+scb-file-input {
+  display: block;
 
-.scb-file-input-wrapper {
-  width: 100%;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px dashed #363636;
-}
+  .scb-fi-wrapper {
+    width: 100%;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px dashed #363636;
+  }
 
-.scb-file-input-hidden {
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  opacity: 0;
-}
+  .scb-fi-hidden {
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+  }
 
-.scb-file-row-header {
-  display: flex;
-  justify-content: space-between;
-}
+  .scb-fi-button-wrapper {
+    display: inline-block;
+  }
 
-.scb-file-input-label {
-  display: inline-block;
-  margin-left: 10px;
-  vertical-align: middle;
-}
+  .scb-fi-row-header {
+    display: flex;
+    justify-content: space-between;
+  }
 
-[slot="label"] + .default-label {
-  display: none;
-}
+  .scb-fi-label {
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
 
-.scb-file-row{
-  margin-top: 10px;
-}
+  [slot="label"] + .scb-fi-default-label {
+    display: none;
+  }
+  [slot="button"] + .scb-fi-default-button {
+    display: none;
+  }
 
-.scb-file-input-wrapper .progress-bar {
-  transition: none;
-}
+  .scb-fi-row {
+    margin-top: 10px;
+  }
 
-.scb-file-retry-btn {
-  display: none;
+  .scb-fi-icon-btn,
+  .scb-fi-icon-btn:hover,
+  .scb-fi-icon-btn:focus {
+    background: none;
+    outline: none;
+    box-shadow: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+
+  .scb-fi-wrapper .progress-bar {
+    transition: none;
+  }
+
+  .scb-fi-retry-btn {
+    display: none;
+  }
 }

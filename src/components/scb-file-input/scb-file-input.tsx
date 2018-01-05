@@ -10,7 +10,7 @@ import { BootstrapThemeColor } from '../../common/index';
 
 @Component({
   tag: 'scb-file-input',
-  styleUrl: './scb-file-input.scss'
+  styleUrl: './scb-file-input.scss',
 })
 export class ScbFileInput {
   @Element() el: HostElement;
@@ -30,7 +30,7 @@ export class ScbFileInput {
    * Fire hidden input click event on Button click
    */
   openFileInput(): void {
-    const hiddenInput:HTMLElement = this.el.getElementsByClassName('scb-file-input-hidden')[0] as HTMLElement;
+    const hiddenInput:HTMLElement = this.el.getElementsByClassName('scb-fi-hidden')[0] as HTMLElement;
     hiddenInput.click();
   }
 
@@ -172,7 +172,7 @@ export class ScbFileInput {
    * @param {Object} file
      */
   private toggleRetryBtn(file): void {
-    const retryBtn = this.el.querySelector('#' + file.elemId + ' .scb-file-retry-btn') as HTMLElement;
+    const retryBtn = this.el.querySelector('#' + file.elemId + ' .scb-fi-retry-btn') as HTMLElement;
     const isAborted = this.isLoadingAborted(file);
 
     retryBtn && retryBtn.classList.toggle('d-inline-block', isAborted);
@@ -368,7 +368,7 @@ export class ScbFileInput {
      */
   private changeFileUploadProgress(file, loadedPercentage: number, status: string) {
     const prBar = this.el.querySelector('#' + file.elemId + ' .progress-bar') as HTMLElement;
-    const statusBar = this.el.querySelector('#' + file.elemId + ' .scb-file-status') as HTMLElement;
+    const statusBar = this.el.querySelector('#' + file.elemId + ' .scb-fi-status') as HTMLElement;
 
     file.loadStatus = loadedPercentage;
     file.status = status;
@@ -378,15 +378,16 @@ export class ScbFileInput {
 
   render() {
     const buttonClasses = {
+      'scb-fi-default-button': true,
       btn: true,
       [`btn-outline-${this.type}`]: true,
     };
     const isMultiple = this.maxFiles !== 1;
     const buttonText:string = isMultiple ? 'Upload Files' : 'Select File';
     const dropLabel:string = isMultiple ? 'Drop files here...' : 'Drop file here...';
-    const label = this.nodrop ? '' : <span class="scb-file-input-label">
+    const label = this.nodrop ? '' : <span class="scb-fi-label">
         <slot name="label"></slot>
-        <span class="default-label">{dropLabel}</span>
+        <span class="scb-fi-default-label">{dropLabel}</span>
       </span>;
     let buttonAttrs:object = {};
     let inputAttrs:object = {};
@@ -402,18 +403,21 @@ export class ScbFileInput {
     }
 
     return (
-      <div class="scb-file-input-wrapper">
-        <input class="scb-file-input-hidden" type="file" onChange={() => this.onFileSelect(event)} {...inputAttrs}/>
-        <button class={buttonClasses} onClick={() => this.openFileInput()} {...buttonAttrs}>{buttonText}</button>
+      <div class="scb-fi-wrapper">
+        <input class="scb-fi-hidden" type="file" onChange={() => this.onFileSelect(event)} {...inputAttrs}/>
+        <fieldset class="scb-fi-button-wrapper" onClick={() => this.openFileInput()} {...buttonAttrs}>
+          <slot name="button"></slot>
+          <button class={buttonClasses}>{buttonText}</button>
+        </fieldset>
         {label}
         {this.selectedFiles.map((file, i) =>
-          <div class="scb-file-row" id={file.elemId}>
-            <div class="scb-file-row-header">
-              <span class="scb-file-name">{file.name}</span>
-              <div class="scb-file-controls">
+          <div class="scb-fi-row" id={file.elemId}>
+            <div class="scb-fi-row-header">
+              <span class="scb-fi-name">{file.name}</span>
+              <div class="scb-fi-controls">
                 <button class={{
                   'icon-btn': true,
-                  'scb-file-retry-btn': true,
+                  'scb-fi-retry-btn': true,
                   'd-inline-block': this.isLoadingAborted(file),
                 }} onClick={() => this.retryUpload(i)}>
                   <span class="scb-icon icon-reload"></span>
@@ -423,7 +427,7 @@ export class ScbFileInput {
                 </button>
               </div>
             </div>
-            <div class="scb-file-status">{file.status}</div>
+            <div class="scb-fi-status">{file.status}</div>
             <div class="progress">
               <div class={{
                 'progress-bar': true,

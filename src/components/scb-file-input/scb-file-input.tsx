@@ -18,6 +18,7 @@ export class ScbFileInput {
   @Prop() type: BootstrapThemeColor = 'primary';
   @Prop() maxFiles: number = 0;
   @Prop() nodrop: boolean = false;
+  @Prop() noAuto: boolean = false;
   @Prop() accept: string;
   @Prop() maxFileSize: number = 0;
   @Prop() method: string;
@@ -26,11 +27,14 @@ export class ScbFileInput {
   @Prop() headers: string;
   @Prop() formDataName: string;
   @State()
-  private selectedFiles = [];
   private element;
 
   componentWillLoad() {
     this.element = this.el;
+    let that = this;
+    this.element.uploadFiles = () => {
+      that.uploadFiles();
+    };
   }
 
   /**
@@ -64,6 +68,13 @@ export class ScbFileInput {
     const file = this.element.files[index];
 
     this.isLoadingAborted && this.uploadFile(file);
+  }
+
+  /**
+   * Manually upload files
+   */
+  uploadFiles(): void {
+    this.files.forEach(file => file.isRead && this.uploadFile(file));
   }
 
   /**
@@ -191,11 +202,11 @@ export class ScbFileInput {
   private readFile(file): void {
     const reader = new FileReader();
     const isRequestDataPresent = this.method && this.target && this.formDataName;
-    this.changeFileUploadProgress(file, 0, 'start reading');
+    this.changeFileUploadProgress(file, 0, 'Start reading');
 
     reader.onprogress = (e) => {
       const percentage = Math.round(e.loaded / e.total * 100);
-      this.changeFileUploadProgress(file, percentage, 'reading');
+      this.changeFileUploadProgress(file, percentage, 'Reading');
     };
     reader.onloadend = () => {
       this.toggleRetryBtn(file);
@@ -203,8 +214,8 @@ export class ScbFileInput {
     reader.onload = () => {
       file.reading = false;
       file.isRead = true;
-      this.changeFileUploadProgress(file, 100, isRequestDataPresent ? 'processing' : '');
-      isRequestDataPresent && this.uploadFile(file);
+      this.changeFileUploadProgress(file, 100, isRequestDataPresent ? 'Queued' : '');
+      isRequestDataPresent && !this.noAuto && this.uploadFile(file);
     };
 
     file.reading = true;
@@ -216,7 +227,7 @@ export class ScbFileInput {
    * Upload file after read or retry button click
    * @param {Object} file
      */
-  private uploadFile(file): void {
+  uploadFile(file): void {
     if (!file.uploading) {
       const request = new XMLHttpRequest;
       let stalledTimeout;
@@ -236,13 +247,13 @@ export class ScbFileInput {
         } else if (!file.abort) {
           if (100 > progress) {
             stalledTimeout = setTimeout(() => {
-              this.changeFileUploadProgress(file, progress, 'stalled');
+              this.changeFileUploadProgress(file, progress, 'Stalled');
             }, 2000);
           } else {
             file.uploading = false;
           }
 
-          this.changeFileUploadProgress(file, progress, 'uploading');
+          this.changeFileUploadProgress(file, progress, 'Uploading');
 
           this.el.dispatchEvent(new CustomEvent('upload-progress', {
             detail: {
@@ -257,7 +268,7 @@ export class ScbFileInput {
           clearTimeout(stalledTimeout);
           file.indeterminate = file.uploading = false;
           if (file.abort) {
-            this.changeFileUploadProgress(file, file.loadStatus, 'error');
+            this.changeFileUploadProgress(file, file.loadStatus, 'Aborted');
           } else {
             const uploadResponseNotCanceled = this.el.dispatchEvent(new CustomEvent('upload-response', {
               detail: {
@@ -284,10 +295,10 @@ export class ScbFileInput {
               },
             }));
             let loadedPercentage = file.error ? file.loadStatus : 100;
-            let uploadStatus = file.error ? ('error: ' + file.error) : '';
+            let uploadStatus = file.error ? ('Error: ' + file.error) : '';
             this.changeFileUploadProgress(file, loadedPercentage, uploadStatus);
             file.uploadEnded = true;
-            file.udloaded = !file.error;
+            file.uploaded = !file.error;
           }
         }
       };
@@ -318,7 +329,7 @@ export class ScbFileInput {
       const formData = new FormData;
       file.uploadTarget = this.target || '';
       file.formDataName = this.formDataName;
-      this.changeFileUploadProgress(file, 0, 'start uploading');
+      this.changeFileUploadProgress(file, 0, 'Start uploading');
       formData.append(file.formDataName, file, file.name);
       request.open(this.method, file.uploadTarget, true);
       this.configureXhr(request);
@@ -337,7 +348,6 @@ export class ScbFileInput {
         cancelable: true,
       }));
       uploadRequestNotCanceled && request.send(formData);
-      request.send(formData);
     }
   }
 

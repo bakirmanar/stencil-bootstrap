@@ -263,6 +263,7 @@ export class ScbFileInput {
           }));
         }
       };
+
       request.onreadystatechange = () => {
         if (request.readyState === 4) {
           clearTimeout(stalledTimeout);
@@ -302,6 +303,7 @@ export class ScbFileInput {
           }
         }
       };
+
       request.upload.onloadstart = () => {
         this.el.dispatchEvent(new CustomEvent('upload-start',{
           detail: {
@@ -310,6 +312,7 @@ export class ScbFileInput {
           },
         }));
       };
+
       request.upload.onloadend = () => {
         file.uploadEnded = true;
         this.toggleRetryBtn(file);
@@ -387,6 +390,10 @@ export class ScbFileInput {
     statusBar && (statusBar.innerHTML = file.status || '');
   }
 
+  /**
+   * Render view based on the component data
+   * @returns view of the component
+     */
   render() {
     const buttonClasses = {
       'scb-fi-default-button': true,
@@ -413,8 +420,8 @@ export class ScbFileInput {
       inputAttrs['accept'] = this.accept;
     }
 
-    /* Sometimes we should disable "Select files" buttons. However we can't set 'disabled' attribute
-     * directly to custom button in <slot>. This is why we have to use <fieldset> tag here.
+    /*
+     * Using the <fieldset> tag for having an ability to disable the custom button in <slot> that can't have disabled attribute set.
      */
     return (
       <div class="scb-fi-wrapper">

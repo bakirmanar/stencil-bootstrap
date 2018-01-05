@@ -71,8 +71,8 @@ export class ScbFileInput {
    * @param {Object} file - file object
    * @returns {boolean}
      */
-  isLoadingAborted(file): boolean {
-    return file.uploadEnded && file.loadStatus !== 100;
+  private isLoadingAborted(file): boolean {
+    return (Boolean)(file.uploadEnded && file.loadStatus !== 100);
   }
 
   @Listen('dragenter')
@@ -203,7 +203,7 @@ export class ScbFileInput {
     reader.onload = () => {
       file.reading = false;
       file.isRead = true;
-      this.changeFileUploadProgress(file, 100, 'processing');
+      this.changeFileUploadProgress(file, 100, isRequestDataPresent ? 'processing' : '');
       isRequestDataPresent && this.uploadFile(file);
     };
 
@@ -270,21 +270,24 @@ export class ScbFileInput {
               return;
             }
             if (request.status === 0) {
-              file.error = 'serverUnavailable';
+              file.error = 'Server unavailable';
             } else if (request.status >= 500) {
-              file.error = 'unexpectedServerError';
+              file.error = 'Unexpected server error';
             } else if (request.status >= 400) {
-              file.error = 'forbidden';
+              file.error = 'Forbidden';
             }
             file.complete = false;
-            this.el.dispatchEvent(new CustomEvent(`upload-${file.error ? 'error' : 'success'}`, {
+            this.el.dispatchEvent(new CustomEvent('upload-' + (file.error ? 'error' : 'success'), {
               detail: {
                 file: file,
                 xhr: request,
               },
             }));
-            this.changeFileUploadProgress(file, 100,'');
-            file.udloaded = true;
+            let loadedPercentage = file.error ? file.loadStatus : 100;
+            let uploadStatus = file.error ? ('error: ' + file.error) : '';
+            this.changeFileUploadProgress(file, loadedPercentage, uploadStatus);
+            file.uploadEnded = true;
+            file.udloaded = !file.error;
           }
         }
       };
@@ -300,10 +303,6 @@ export class ScbFileInput {
         file.uploadEnded = true;
         this.toggleRetryBtn(file);
       };
-      request.upload.onerror = () => {
-        this.changeFileUploadProgress(file, file.loadStatus, 'error');
-      };
-
 
       const uploadBeforeNotCanceled = this.el.dispatchEvent(new CustomEvent('upload-before', {
         detail: {
@@ -312,10 +311,10 @@ export class ScbFileInput {
         },
         cancelable: true,
       }));
-       // code below is running if uploadBefore is not canceled
-      if (uploadBeforeNotCanceled) {
+      if (!uploadBeforeNotCanceled) {
         return;
       }
+
       const formData = new FormData;
       file.uploadTarget = this.target || '';
       file.formDataName = this.formDataName;
@@ -405,7 +404,7 @@ export class ScbFileInput {
     }
 
     /* Sometimes we should disable "Select files" buttons. However we can't set 'disabled' attribute
-     * directly to custom button in <slot>. This is why we have to use here <fieldset> tag.
+     * directly to custom button in <slot>. This is why we have to use <fieldset> tag here.
      */
     return (
       <div class="scb-fi-wrapper">

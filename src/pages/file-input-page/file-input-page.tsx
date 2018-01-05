@@ -298,11 +298,11 @@ export class FileInputPage {
   }
 
   private initManualUploadDemo () {
-    let script = 'var upload = document.querySelector(\'scb-file-input#manualUploadDemo\');\n' +
+    let script = 'var manualUploadDemo = document.querySelector(\'scb-file-input#manualUploadDemo\');\n' +
       '           var uploadButton = document.getElementById(\'uploadButton\');\n' +
       '\n' +
       '           uploadButton.addEventListener(\'click\', function() {\n' +
-      '             upload.uploadFiles();\n' +
+      '             manualUploadDemo.uploadFiles();\n' +
       '           });';
 
     this.addScript('scb-file-input#manualUploadDemo', script);

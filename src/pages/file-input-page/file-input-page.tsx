@@ -142,6 +142,35 @@ export class FileInputPage {
           &lt;/script&gt;
         </code>
 
+        <h2>Custom Reaction on Server Response</h2>
+        <scb-file-input id="responseDemo" method="post" target="https://virtserver.swaggerhub.com/bakirmanar/POST_API/1.0.0/pet/1/uploadImage"
+                        form-data-name="file" class="mb-0"></scb-file-input>
+        <code class="mb-3 d-block p-3">
+          &lt;scb-file-input id="responseDemo" method="post" target="https://virtserver.swaggerhub.com/bakirmanar/POST_API/1.0.0/pet/1/uploadImage"
+          form-data-name="file"&gt;&lt;/scb-file-input&gt;<br/><br/>
+
+
+          &lt;script&gt;
+          <div class="ml-3">
+            window.addEventListener('DOMContentLoaded', function() &#123;
+            <div class="ml-3">
+              var upload = document.querySelector('scb-file-input#responseDemo');<br/><br/>
+
+              upload.addEventListener('upload-response', function(event) &#123;
+              <div class="ml-3">
+                console.log('upload xhr after server response: ', event.detail.xhr);<br/>
+                event.detail.file.error = 'Custom server error message.';<br/><br/>
+
+                // Interpret any server response as success:<br/>
+                // event.detail.xhr.status = 200;
+              </div>
+              &#125;);
+            </div>
+            &#125;);
+          </div>
+          &lt;/script&gt;
+        </code>
+
         <h2>Pre-Filling the File List in Advance</h2>
         <scb-file-input id="preFillDemo" method="post" target="https://virtserver.swaggerhub.com/bakirmanar/POST_API/1.0.0/pet/1/uploadImage"
                         accept="application/pdf" form-data-name="file" class="mb-0"></scb-file-input>
@@ -202,6 +231,7 @@ export class FileInputPage {
     this.initRawFilesDemo();
     this.initPreFillDemo();
     this.initManualUploadDemo();
+    this.initResponseDemo();
   }
 
   private addScript (selector, script) {
@@ -276,5 +306,19 @@ export class FileInputPage {
       '           });';
 
     this.addScript('scb-file-input#manualUploadDemo', script);
+  }
+
+  private initResponseDemo () {
+    let script = 'var upload = document.querySelector(\'scb-file-input#responseDemo\');\n' +
+      '\n' +
+      '              upload.addEventListener(\'upload-response\', function(event) {\n' +
+      '                console.log(\'upload xhr after server response: \', event.detail.xhr);\n' +
+      '                event.detail.file.error = \'Custom server error message.\';\n' +
+      '\n' +
+      '                // Interpret any server response as success:\n' +
+      '                // event.detail.xhr.status = 200;\n' +
+      '              });';
+
+    this.addScript('scb-file-input#responseDemo', script);
   }
 }
